@@ -100,6 +100,7 @@ _REG_PREAMBLE_LSB = const(0x2D)
 _REG_SYNC_CONFIG = const(0x2E)
 _REG_SYNC_VALUE1 = const(0x2F)
 _REG_PACKET_CONFIG1 = const(0x37)
+_REG_PAYLOAD_LENGTH = const(0x38)
 _REG_FIFO_THRESH = const(0x3C)
 _REG_PACKET_CONFIG2 = const(0x3D)
 _REG_AES_KEY1 = const(0x3E)
@@ -316,6 +317,7 @@ class RFM69:
         # by default.  Users with advanced knowledge can manually reconfigure
         # for any other mode (consulting the datasheet is absolutely
         # necessary!).
+        self.payload_length = 0x40  # used for fixed-length payloads
         self.modulation_shaping = 0b01  # Gaussian filter, BT=1.0
         self.bitrate = 250000  # 250kbs
         self.frequency_deviation = 250000  # 250khz
@@ -519,6 +521,20 @@ class RFM69:
                 if time.monotonic() - start >= 1:
                     raise TimeoutError("Operation Mode failed to set.")
 
+    @property
+    def payload_length(self) -> int:
+        return(self._read_u8(_REG_PAYLOAD_LENGTH)
+
+    @payload_length.setter
+    def payload_length(self, val: int) -> None
+        """The maximum length of the packet being read. If variable packet lengths are used
+        (packet_format=1) then this specifies the maximum length in Rx (not used for Tx).
+        If fixed packet lengths are used (packet_format=0), this specified the payload
+        length in Rx and Tx
+        """
+        assert 0 <= val <= 255  # FIFO size is 66 bytes
+        self._write_u8(_REG_PAYLOAD_LENGTH, val)
+    
     @property
     def sync_word(self) -> bytearray:
         """The synchronization word value.  This is a byte string up to 8 bytes long (64 bits)
@@ -874,8 +890,12 @@ class RFM69:
         self.last_rssi = self.rssi
         # Enter idle mode to stop receiving other packets.
         self.idle()
-        # Read the length of the FIFO.
-        fifo_length = self._read_u8(_REG_FIFO)
+        # If packet length is variable read the length from the first byte of the FIFO
+        # otherwise use the specified packet length
+        if self.packet_format:
+            fifo_length = self._read_u8(_REG_FIFO)
+        else:
+            fifo_length = self.payload_length
         # Handle if the received packet is too small to include the 4 byte
         # RadioHead header and at least one byte of data --reject this packet and ignore it.
         if fifo_length > 0:  # read and clear the FIFO if anything in it
