@@ -6,15 +6,18 @@
 `adafruit_rfm69`
 ====================================================
 
-CircuitPython RFM69 packet radio module. This supports basic RadioHead-compatible sending and
-receiving of packets with RFM69 series radios (433/915Mhz).
+CircuitPython RFM69 packet radio module. This supports basic RadioHead-
+compatible sending and receiving of packets with RFM69 series radios
+(433/868/915MHz).
 
 .. warning:: This is NOT for LoRa radios!
 
-.. note:: This is a 'best effort' at receiving data using pure Python code--there is not interrupt
-    support so you might lose packets if they're sent too quickly for the board to process them.
-    You will have the most luck using this in simple low bandwidth scenarios like sending and
-    receiving a 60 byte packet at a time--don't try to receive many kilobytes of data at a time!
+.. note:: This is a 'best effort' at receiving data using pure Python code--
+    there is not interrupt support so you might lose packets if they're sent
+    too quickly for the board to process them. You will have the most luck
+    using this in simple low bandwidth scenarios like sending and receiving a
+    60-byte packet at a time--don't try to receive many kilobytes of data at a
+    time!
 
 * Author(s): Tony DiCola, Jerry Needell
 
@@ -125,8 +128,8 @@ _FSTEP = _FXOSC / 524288
 # RadioHead specific compatibility constants.
 _RH_BROADCAST_ADDRESS = const(0xFF)
 # The acknowledgement bit in the FLAGS
-# The top 4 bits of the flags are reserved for RadioHead. The lower 4 bits are reserved
-# for application layer use.
+# The top 4 bits of the flags are reserved for RadioHead. The lower 4 bits are
+# reserved for application layer use.
 _RH_FLAGS_ACK = const(0x80)
 _RH_FLAGS_RETRY = const(0x40)
 
@@ -174,40 +177,49 @@ class RFM69:
     receiving of wireless data at supported frequencies of the radio
     (433/915mhz).
 
-    :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI, and MISO are
-        connected.
-    :param ~digitalio.DigitalInOut cs: A DigitalInOut object connected to the chip's CS/chip select
-        line.
-    :param ~digitalio.DigitalInOut reset: A DigitalInOut object connected to the chip's RST/reset
-        line.
-    :param int frequency: The center frequency to configure for radio transmission and reception.
-        Must be a frequency supported by your hardware (i.e. either 433 or 915mhz).
-    :param bytes sync_word: A byte string up to 8 bytes long which represents the syncronization
-        word used by received and transmitted packets. Read the datasheet for a full understanding
-        of this value! However by default the library will set a value that matches the RadioHead
-        Arduino library.
-    :param int preamble_length: The number of bytes to pre-pend to a data packet as a preamble.
-        This is by default 4 to match the RadioHead library.
-    :param bytes encryption_key: A 16 byte long string that represents the AES encryption key to use
-        when encrypting and decrypting packets.  Both the transmitter and receiver MUST have the
-        same key value! By default no encryption key is set or used.
-    :param bool high_power: Indicate if the chip is a high power variant that supports boosted
-        transmission power.  The default is True as it supports the common RFM69HCW modules sold by
-        Adafruit.
+    :param busio.SPI spi: The SPI bus connected to the chip.  Ensure SCK, MOSI,
+        and MISO are connected.
+    :param ~digitalio.DigitalInOut cs: A DigitalInOut object connected to the
+        chip's CS/chip selectline.
+    :param ~digitalio.DigitalInOut reset: A DigitalInOut object connected to
+        the chip's RST/reset line.
+    :param int frequency: The center frequency to configure for radio
+        transmission and reception. Must be a frequency supported by your
+        hardware (i.e. either 433, 868 or 915MHz).
+    :param bytes sync_word: A byte string up to 8 bytes long which represents
+        the syncronization word used by received and transmitted packets. Read
+        the datasheet for a full understanding of this value! However by
+        default the library will set a value that matches the RadioHead Arduino
+        library.
+    :param int preamble_length: The number of bytes to pre-pend to a data
+        packet as a preamble. This is by default 4 to match the RadioHead
+        library.
+    :param bytes encryption_key: A 16 byte long string that represents the AES
+        encryption key to use when encrypting and decrypting packets.  Both the
+        transmitter and receiver MUST have the same key value! By default no
+        encryption key is set or used.
+    :param bool high_power: Indicate if the chip is a high power variant that
+        supports boosted transmission power.  The default is True as it
+        supports the common RFM69HCW modules sold by Adafruit.
 
-    .. note:: The D0/interrupt line is currently unused by this module and can remain unconnected.
+    .. note:: The D0/interrupt line is currently unused by this module and can
+        remain unconnected.
 
-    Remember this library makes a best effort at receiving packets with pure Python code.  Trying
-    to receive packets too quickly will result in lost data so limit yourself to simple scenarios
-    of sending and receiving single packets at a time.
+    Remember this library makes a best effort at receiving packets with pure
+    Python code. Trying to receive packets too quickly will result in lost data
+    so limit yourself to simple scenarios of sending and receiving single
+    packets at a time.
 
-    Also note this library tries to be compatible with raw RadioHead Arduino library communication.
-    This means the library sets up the radio modulation to match RadioHead's default of GFSK
-    encoding, 250kbit/s bitrate, and 250khz frequency deviation. To change this requires explicitly
-    setting the radio's bitrate and encoding register bits. Read the datasheet and study the init
-    function to see an example of this--advanced users only! Advanced RadioHead features like
-    address/node specific packets or "reliable datagram" delivery are supported however due to the
-    limitations noted, "reliable datagram" is still subject to missed packets but with it, the
+
+    Also note this library tries to be compatible with raw RadioHead Arduino
+    library communication. This means the library sets up the radio modulation
+    to match RadioHead's default of GFSK encoding, 250kbit/s bitrate, and
+    250kHz frequency deviation. To change this requires explicitly setting the
+    radio's bitrate and encoding register bits. Read the datasheet and study
+    the init function to see an example of this--advanced users only! Advanced
+    RadioHead features like address/node specific packets or "reliable
+    datagram" delivery are supported however due to the limitations noted,
+    "reliable datagram" is still subject to missed packets but with it, the
     sender is notified if a packet has potentially been missed.
     """
 
@@ -222,13 +234,14 @@ class RFM69:
         # used by the parent RFM69 class instance vs. each having their own
         # buffer and taking too much memory).
 
-        # This is a decorator class in Python and by design it has no public methods.
-        # Instead it uses dunder accessors like get and set below.
+        # This is a decorator class in Python and by design it has no public
+        # methods. Instead it uses dunder accessors like get and set below.
 
         # This is an internally used class that calls the read/write functions
         # of the parent class.
 
-        def __init__(self, address: int, *, offset: int = 0, bits: int = 1) -> None:
+        def __init__(
+                self, address: int, *, offset: int = 0, bits: int = 1) -> None:
             assert 0 <= offset <= 7
             assert 1 <= bits <= 8
             assert (offset + bits) <= 8
@@ -292,8 +305,9 @@ class RFM69:
     ) -> None:
         self._tx_power = 13
         self.high_power = high_power
-        # Device support SPI mode 0 (polarity & phase = 0) up to a max of 10mhz.
-        self._device = spidev.SPIDevice(spi, cs, baudrate=baudrate, polarity=0, phase=0)
+        # Device support SPI mode 0 (polarity & phase = 0) up to a max of 10MHz
+        self._device = spidev.SPIDevice(
+            spi, cs, baudrate=baudrate, polarity=0, phase=0)
         # Setup reset as a digital output that's low.
         self._reset = reset
         self._reset.switch_to_output(value=False)
@@ -304,7 +318,8 @@ class RFM69:
             raise RuntimeError("Invalid RFM69 version, check wiring!")
         self.idle()  # Enter idle state.
         # Setup the chip in a similar way to the RadioHead RFM69 library.
-        # Set FIFO TX condition to not empty and the default FIFO threshold to 15.
+        # Set FIFO TX condition to not empty and
+        # the default FIFO threshold to 15.
         self._write_u8(_REG_FIFO_THRESH, 0b10001111)
         # Configure low beta off.
         self._write_u8(_REG_TEST_DAGC, 0x30)
@@ -334,37 +349,39 @@ class RFM69:
 
         # initialize last RSSI reading
         self.last_rssi = 0.0
-        """The RSSI of the last received packet. Stored when the packet was received.
-           This instantaneous RSSI value may not be accurate once the
-           operating mode has been changed.
-        """
+        # The RSSI of the last received packet. Stored when the packet was
+        # received. This instantaneous RSSI value may not be accurate once the
+        # operating mode has been changed.
+
         # initialize timeouts and delays delays
         self.ack_wait = 0.5
-        """The delay time before attempting a retry after not receiving an ACK"""
+
+        # The delay time before attempting a retry after not receiving an ACK
+        # The amount of time to poll for a received packet.
+        # If no packet is received, the returned packet will be None
         self.receive_timeout = 0.5
-        """The amount of time to poll for a received packet.
-           If no packet is received, the returned packet will be None
-        """
+
+        # The amount of time to wait for the HW to transmit the packet.
+        # This is mainly used to prevent a hang due to a HW issue
         self.xmit_timeout = 2.0
-        """The amount of time to wait for the HW to transmit the packet.
-           This is mainly used to prevent a hang due to a HW issue
-        """
+
+        # The number of ACK retries before reporting a failure.
         self.ack_retries = 5
-        """The number of ACK retries before reporting a failure."""
-        self.ack_delay = None
-        """The delay time before attemting to send an ACK.
-           If ACKs are being missed try setting this to .1 or .2.
-        """
+
+        # The delay time before attemting to send an ACK.
+        # If ACKs are being missed try setting this to .1 or .2.
         # initialize sequence number counter for reliabe datagram mode
-        self.sequence_number = 0
+        self.ack_delay = None
+
         # create seen Ids list
+        self.sequence_number = 0
         self.seen_ids = bytearray(256)
         # initialize packet header
         # node address - default is broadcast
         self.node = _RH_BROADCAST_ADDRESS
         """The default address of this Node. (0-255).
-           If not 255 (0xff) then only packets address to this node will be accepted.
-           First byte of the RadioHead header.
+           If not 255 (0xff) then only packets address to this node will be
+            accepted. First byte of the RadioHead header.
         """
         # destination address - default is broadcast
         self.destination = _RH_BROADCAST_ADDRESS
@@ -385,7 +402,12 @@ class RFM69:
         """
 
     # Reconsider this disable when it can be tested.
-    def _read_into(self, address: int, buf: WriteableBuffer, length: Optional[int] = None) -> None:
+    def _read_into(
+        self,
+        address: int,
+        buf: WriteableBuffer,
+        length: Optional[int] = None
+    ) -> None:
         # Read a number of bytes from the specified address into the provided
         # buffer.  If length is not specified (the default) the entire buffer
         # will be filled.
@@ -402,7 +424,8 @@ class RFM69:
         self._read_into(address, self._BUFFER, length=1)
         return self._BUFFER[0]
 
-    def _write_from(self, address: int, buf: ReadableBuffer, length: Optional[int] = None) -> None:
+    def _write_from(self, address: int, buf: ReadableBuffer,
+                    length: Optional[int] = None) -> None:
         # Write a number of bytes to the provided address and taken from the
         # provided buffer.  If no length is specified (the default) the entire
         # buffer is written.
@@ -439,7 +462,8 @@ class RFM69:
             self._write_u8(_REG_OCP, _OCP_NORMAL)
 
     def idle(self) -> None:
-        """Enter idle standby mode (switching off high power amplifiers if necessary)."""
+        """Enter idle standby mode (switching off high power amplifiers
+        if necessary)."""
         # Like RadioHead library, turn off high power boost if enabled.
         self.disable_boost()
         self.operation_mode = STANDBY_MODE
@@ -449,8 +473,9 @@ class RFM69:
         self.operation_mode = SLEEP_MODE
 
     def listen(self) -> None:
-        """Listen for packets to be received by the chip.  Use :py:func:`receive` to listen, wait
-        and retrieve packets as they're available.
+        """Listen for packets to be received by the chip. Use
+        :py:func:`receive` to listen, wait and retrieve packets as they're
+        available.
         """
         # Like RadioHead library, turn off high power boost if enabled.
         self.disable_boost()
@@ -460,9 +485,9 @@ class RFM69:
         self.operation_mode = RX_MODE
 
     def transmit(self) -> None:
-        """Transmit a packet which is queued in the FIFO.  This is a low level function for
-        entering transmit mode and more.  For generating and transmitting a packet of data use
-        :py:func:`send` instead.
+        """Transmit a packet which is queued in the FIFO.  This is a low-level
+        function for entering transmit mode and more.  For generating and
+        transmitting a packet of data use :py:func:`send` instead.
         """
         # Like RadioHead library, turn on high power boost if needed.
         if self.high_power and (self._tx_power >= 18):
@@ -476,10 +501,11 @@ class RFM69:
 
     @property
     def temperature(self) -> float:
-        """The internal temperature of the chip in degrees Celsius. Be warned this is not
-        calibrated or very accurate.
+        """The internal temperature of the chip in degrees Celsius. Be warned
+        this is not calibrated or very accurate.
 
-        .. warning:: Reading this will STOP any receiving/sending that might be happening!
+        .. warning:: Reading this will STOP any receiving/sending that might be
+        happening!
         """
         self.idle()  # set radio to idle before reading temperature.
         # Start a measurement then poll the measurement finished bit.
@@ -493,9 +519,10 @@ class RFM69:
 
     @property
     def operation_mode(self) -> int:
-        """The operation mode value.  Unless you're manually controlling the chip you shouldn't
-        change the operation_mode with this property as other side-effects are required for
-        changing logical modes--use :py:func:`idle`, :py:func:`sleep`, :py:func:`transmit`,
+        """The operation mode value.  Unless you're manually controlling the
+        chip you shouldn't change the operation_mode with this property as
+        other side-effects are required for changing logical modes--use
+        :py:func:`idle`, :py:func:`sleep`, :py:func:`transmit`,
         :py:func:`listen` instead to signal intent for explicit logical modes.
         """
         op_mode = self._read_u8(_REG_OP_MODE)
@@ -523,24 +550,25 @@ class RFM69:
 
     @property
     def payload_length(self) -> int:
-        return(self._read_u8(_REG_PAYLOAD_LENGTH)
+        return (self._read_u8(_REG_PAYLOAD_LENGTH))
 
     @payload_length.setter
-    def payload_length(self, val: int) -> None
-        """The maximum length of the packet being read. If variable packet lengths are used
-        (packet_format=1) then this specifies the maximum length in Rx (not used for Tx).
-        If fixed packet lengths are used (packet_format=0), this specified the payload
-        length in Rx and Tx
+    def payload_length(self, val: int) -> None:
+        """The maximum length of the packet being read. If variable packet
+        lengths are used (packet_format=1) then this specifies the maximum
+        length in Rx (not used for Tx). If fixed packet lengths are used
+        (packet_format=0), this specified the payload length in Rx and Tx.
         """
         assert 0 <= val <= 255  # FIFO size is 66 bytes
         self._write_u8(_REG_PAYLOAD_LENGTH, val)
-    
+
     @property
-    def sync_word(self) -> bytearray:
-        """The synchronization word value.  This is a byte string up to 8 bytes long (64 bits)
-        which indicates the synchronization word for transmitted and received packets. Any
-        received packet which does not include this sync word will be ignored. The default value
-        is 0x2D, 0xD4 which matches the RadioHead RFM69 library. Setting a value of None will
+    def sync_word(self) -> bytearray | None:
+        """The synchronization word value.  This is a byte string up to 8 bytes
+        long (64 bits) which indicates the synchronization word for transmitted
+        and received packets. Any received packet which does not include this
+        sync word will be ignored. The default value is 0x2D, 0xD4 which
+        matches the RadioHead RFM69 library. Setting a value of None will
         disable synchronization word matching entirely.
         """
         # Handle when sync word is disabled..
@@ -554,7 +582,7 @@ class RFM69:
         return sync_word
 
     @sync_word.setter
-    def sync_word(self, val: Optional[bytearray]) -> None:
+    def sync_word(self, val: bytearray | bytes) -> None:
         # Handle disabling sync word when None value is set.
         if val is None:
             self.sync_on = 0
@@ -569,9 +597,9 @@ class RFM69:
 
     @property
     def preamble_length(self) -> int:
-        """The length of the preamble for sent and received packets, an unsigned 16-bit value.
-        Received packets must match this length or they are ignored! Set to 4 to match the
-        RadioHead RFM69 library.
+        """The length of the preamble for sent and received packets, an
+        unsigned 16-bit value. Received packets must match this length or they
+        are ignored! Set to 4 to match the RadioHead RFM69 library.
         """
         msb = self._read_u8(_REG_PREAMBLE_MSB)
         lsb = self._read_u8(_REG_PREAMBLE_LSB)
@@ -585,8 +613,8 @@ class RFM69:
 
     @property
     def frequency_mhz(self) -> float:
-        """The frequency of the radio in Megahertz. Only the allowed values for your radio must be
-        specified (i.e. 433 vs. 915 mhz)!
+        """The frequency of the radio in Megahertz. Only the allowed values for
+        your radio must be specified (i.e. 433 vs. 915 mhz)!
         """
         # FRF register is computed from the frequency following the datasheet.
         # See section 6.2 and FRF register description.
@@ -601,7 +629,8 @@ class RFM69:
     @frequency_mhz.setter
     def frequency_mhz(self, val: float) -> None:
         assert 290 <= val <= 1020
-        # Calculate FRF register 24-bit value using section 6.2 of the datasheet.
+        # Calculate FRF register 24-bit value using section 6.2 of the
+        # datasheet.
         frf = int((val * 1000000.0) / _FSTEP) & 0xFFFFFF
         # Extract byte values and update registers.
         msb = frf >> 16
@@ -612,11 +641,11 @@ class RFM69:
         self._write_u8(_REG_FRF_LSB, lsb)
 
     @property
-    def encryption_key(self) -> bytearray:
-        """The AES encryption key used to encrypt and decrypt packets by the chip. This can be set
-        to None to disable encryption (the default), otherwise it must be a 16 byte long byte
-        string which defines the key (both the transmitter and receiver must use the same key
-        value).
+    def encryption_key(self) -> bytearray | None:
+        """The AES encryption key used to encrypt and decrypt packets by the
+        chip. This can be set to None to disable encryption (the default),
+        otherwise it must be a 16 byte long byte string which defines the key
+        (both the transmitter and receiver must use the same key value).
         """
         # Handle if encryption is disabled.
         if self.aes_on == 0:
@@ -627,7 +656,7 @@ class RFM69:
         return key
 
     @encryption_key.setter
-    def encryption_key(self, val: bytearray) -> None:
+    def encryption_key(self, val: bytearray | bytes | None) -> None:
         # Handle if unsetting the encryption key (None value).
         if val is None:
             self.aes_on = 0
@@ -639,9 +668,10 @@ class RFM69:
 
     @property
     def tx_power(self) -> int:
-        """The transmit power in dBm. Can be set to a value from -2 to 20 for high power devices
-        (RFM69HCW, high_power=True) or -18 to 13 for low power devices. Only integer power
-        levels are actually set (i.e. 12.5 will result in a value of 12 dBm).
+        """The transmit power in dBm. Can be set to a value from -2 to 20 for
+        high power devices (RFM69HCW, high_power=True) or -18 to 13 for
+        low-power devices. Only integer power levels are actually set (i.e.,
+        12.5 will result in a value of 12 dBm).
         """
         # Follow table 10 truth table from the datasheet for determining power
         # level from the individual PA level bits and output power register.
@@ -658,7 +688,8 @@ class RFM69:
         if not pa0 and pa1 and pa2 and self.high_power and self._tx_power < 18:
             # 2 to 17 dBm range
             return -14 + current_output_power
-        if not pa0 and pa1 and pa2 and self.high_power and self._tx_power >= 18:
+        if (not pa0 and pa1 and pa2 and self.high_power
+                and self._tx_power >= 18):
             # 5 to 20 dBm range
             return -11 + current_output_power
         raise RuntimeError("Power amps state unknown!")
@@ -699,17 +730,17 @@ class RFM69:
     @property
     def rssi(self) -> float:
         """The received strength indicator (in dBm).
-        May be inaccurate if not read immediately. last_rssi contains the value read immediately
-        receipt of the last packet.
+        May be inaccurate if not read immediately. last_rssi contains the value
+        read immediately receipt of the last packet.
         """
         # Read RSSI register and convert to value using formula in datasheet.
         return -self._read_u8(_REG_RSSI_VALUE) / 2.0
 
     @property
     def bitrate(self) -> float:
-        """The modulation bitrate in bits/second (or chip rate if Manchester encoding is enabled).
-        Can be a value from ~489 to 32mbit/s, but see the datasheet for the exact supported
-        values.
+        """The modulation bitrate in bits/second (or chip rate if Manchester
+        encoding is enabled). Can be a value from ~489 to 32mbit/s, but see the
+        datasheet for the exact supported values.
         """
         msb = self._read_u8(_REG_BITRATE_MSB)
         lsb = self._read_u8(_REG_BITRATE_LSB)
@@ -740,11 +771,11 @@ class RFM69:
 
     def packet_sent(self) -> bool:
         """Transmit status"""
-        return (self._read_u8(_REG_IRQ_FLAGS2) & 0x8) >> 3
+        return bool((self._read_u8(_REG_IRQ_FLAGS2) & 0x8) >> 3)
 
     def payload_ready(self) -> bool:
         """Receive status"""
-        return (self._read_u8(_REG_IRQ_FLAGS2) & 0x4) >> 2
+        return bool((self._read_u8(_REG_IRQ_FLAGS2) & 0x4) >> 2)
 
     def send(
         self,
@@ -759,13 +790,16 @@ class RFM69:
         """Send a string of data using the transmitter.
         You can only send 60 bytes at a time
         (limited by chip's FIFO size and appended headers).
-        This appends a 4 byte header to be compatible with the RadioHead library.
+        This appends a 4 byte header to be compatible with the RadioHead
+        library.
         The header defaults to using the initialized attributes:
         (destination,node,identifier,flags)
-        It may be temporarily overidden via the kwargs - destination,node,identifier,flags.
+        It may be temporarily overidden via the kwargs - destination,node,
+        identifier,flags.
         Values passed via kwargs do not alter the attribute settings.
-        The keep_listening argument should be set to True if you want to start listening
-        automatically after the packet is sent. The default setting is False.
+        The keep_listening argument should be set to True if you want to start
+        listening automatically after the packet is sent. The default setting
+        is False.
 
         Returns: True if success or False if the send timed out.
         """
@@ -827,7 +861,8 @@ class RFM69:
                 got_ack = True
             else:
                 # wait for a packet from our destination
-                ack_packet = self.receive(timeout=self.ack_wait, with_header=True)
+                ack_packet = self.receive(
+                    timeout=self.ack_wait, with_header=True)
                 if ack_packet is not None:
                     if ack_packet[3] & _RH_FLAGS_ACK:
                         # check the ID
@@ -851,18 +886,19 @@ class RFM69:
         with_ack: bool = False,
         timeout: Optional[float] = None,
         with_header: bool = False,
-    ) -> int:
-        """Wait to receive a packet from the receiver. If a packet is found the payload bytes
-        are returned, otherwise None is returned (which indicates the timeout elapsed with no
-        reception).
-        If keep_listening is True (the default) the chip will immediately enter listening mode
-        after reception of a packet, otherwise it will fall back to idle mode and ignore any
-        future reception.
+    ) -> bytearray | None:
+        """Wait to receive a packet from the receiver. If a packet is found the
+        payload bytes are returned, otherwise None is returned (which indicates
+        the timeout elapsed with no reception).
+        If keep_listening is True (the default) the chip will immediately enter
+        listening mode after reception of a packet, otherwise it will fall back
+        to idle mode and ignore any future reception.
         All packets must have a 4 byte header for compatibilty with the
         RadioHead library.
-        The header consists of 4 bytes (To,From,ID,Flags). The default setting will  strip
-        the header before returning the packet to the caller.
-        If with_header is True then the 4 byte header will be returned with the packet.
+        The header consists of 4 bytes (To,From,ID,Flags). The default setting
+        will strip the header before returning the packet to the caller.
+        If with_header is True then the 4 byte header will be returned with the
+        packet.
         The payload then begins at packet[4].
         If with_ack is True, send an ACK after receipt (Reliable Datagram mode)
         """
@@ -872,8 +908,8 @@ class RFM69:
         if timeout is not None:
             # Wait for the payload_ready signal.  This is not ideal and will
             # surely miss or overflow the FIFO when packets aren't read fast
-            # enough, however it's the best that can be done from Python without
-            # interrupt supports.
+            # enough, however it's the best that can be done from Python
+            # without interrupt supports.
             # Make sure we are listening for packets.
             self.listen()
             timed_out = check_timeout(self.payload_ready, timeout)
@@ -890,14 +926,15 @@ class RFM69:
         self.last_rssi = self.rssi
         # Enter idle mode to stop receiving other packets.
         self.idle()
-        # If packet length is variable read the length from the first byte of the FIFO
-        # otherwise use the specified packet length
+        # If packet length is variable read the length from the first byte of
+        # the FIFO otherwise use the specified packet length
         if self.packet_format:
             fifo_length = self._read_u8(_REG_FIFO)
         else:
             fifo_length = self.payload_length
         # Handle if the received packet is too small to include the 4 byte
-        # RadioHead header and at least one byte of data --reject this packet and ignore it.
+        # RadioHead header and at least one byte of data --reject this packet
+        # and ignore it.
         if fifo_length > 0:  # read and clear the FIFO if anything in it
             packet = bytearray(fifo_length)
             self._read_into(_REG_FIFO, packet, fifo_length)
@@ -916,7 +953,7 @@ class RFM69:
                 and ((packet[3] & _RH_FLAGS_ACK) == 0)
                 and (packet[0] != _RH_BROADCAST_ADDRESS)
             ):
-                # delay before sending Ack to give receiver a chance to get ready
+                # delay before sending Ack to give receiver time to get ready
                 if self.ack_delay is not None:
                     time.sleep(self.ack_delay)
                 # send ACK packet to sender (data is b'!')
@@ -927,12 +964,13 @@ class RFM69:
                     identifier=packet[2],
                     flags=(packet[3] | _RH_FLAGS_ACK),
                 )
-                # reject Retries if we have seen this idetifier from this source before
-                if (self.seen_ids[packet[1]] == packet[2]) and (packet[3] & _RH_FLAGS_RETRY):
+                # reject Retries if this idetifier seen from this source before
+                if ((self.seen_ids[packet[1]] == packet[2])
+                        and (packet[3] & _RH_FLAGS_RETRY)):
                     packet = None
                 else:  # save the packet identifier for this source
                     self.seen_ids[packet[1]] = packet[2]
-            if not with_header and packet is not None:  # skip the header if not wanted
+            if not with_header and packet is not None:  # skip unwanted header
                 packet = packet[4:]
         # Listen again if necessary and return the result packet.
         if keep_listening:
